@@ -6,10 +6,13 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 from scrapy.exporters  import CsvItemExporter
 import datetime
-class RealEstatePipeline(object):
+import os
+class RealestatePipeline(object):
 	def __init__(self):
+		if not os.path.exists(os.path.join(os.getcwd(), 'result')):
+			os.mkdir("result")
 		self.file = open("result/"+str(datetime.datetime.now())+".csv", 'wb')
-		self.exporter = CsvItemExporter(self.file, unicode)
+		self.exporter = CsvItemExporter(self.file, unicode,fields_to_export=["lon","lat","square","cost","category","street","ward","district","city","date_created","date_modified","url"])
 		self.exporter.start_exporting()
 	def close_spider(self, spider):
 		self.exporter.finish_exporting()

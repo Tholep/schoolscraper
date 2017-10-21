@@ -65,7 +65,7 @@ COOKIES_ENABLED = False
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'tutorial.pipelines.SchoolInfoPipeline': 300,
+    'realestate.pipelines.RealestatePipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

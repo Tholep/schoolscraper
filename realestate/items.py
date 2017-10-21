@@ -7,12 +7,20 @@
 
 import scrapy
 
-
 class RealEstateInfo(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
 
-    address=scrapy.Field()
-    loc=scrapy.Field()
-    size=scrapy.Field()
+    #address=scrapy.Field()
+    lon=scrapy.Field()
+    lat=scrapy.Field()
+    square=scrapy.Field()
     cost=scrapy.Field()
+    category=scrapy.Field()
+    street=scrapy.Field()
+    ward=scrapy.Field()
+    district=scrapy.Field()
+    city=scrapy.Field()
+    url=scrapy.Field()
+    date_created=scrapy.Field()
+    date_modified=scrapy.Field()

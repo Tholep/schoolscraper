@@ -1,7 +1,7 @@
 import sys
 import os
 # Add the ptdraft folder path to the sys.path list
-sys.path.append('/home/thole/Downloads/realestate')
+sys.path.append(os.path.join(os.getcwd(), 'realestate'))
 print sys.path
 import scrapy
 
@@ -9,7 +9,10 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
 from scrapy.loader import ItemLoader
-from realestate.items import RealEstateInfo
+
+from items import RealEstateInfo
+
+
 
 import scrapy
 from scrapy.crawler import CrawlerProcess
@@ -18,57 +21,90 @@ from scrapy.utils.project import get_project_settings
 import re
 import pandas as pd
 
-'''
-Max_depth=2
-filters_scheme=r'^(javascript|mailto|tel)'
-filters_pages=r'.*?(amazon|johnlewis|eclipse-creative|telegraph|theguardian|pinterest|facebook|twitter|linkedin|youtube|yahoo|Flickr|apple|google|vimeo|instagram|cie|ibo|BBC|news|newsletter|calendar|job).*?'
-filters_extension=r'(\.pdf|\.jpg|\.mp4|\.png|\.jpeg|\.icon|\.doc|\.docx|\.xls|\.xlsx|\.js|\.bz2|rss|RSS)$'
-
-regex_schemes=re.compile(filters_scheme,re.IGNORECASE)
-regex_pages=re.compile(filters_pages,re.IGNORECASE)
-regex_extensions=re.compile(filters_extension,re.IGNORECASE)
-'''
-
-class RealEstate(scrapy.Spider):
+class myspider(scrapy.Spider):
     name = "realestate"
-
+    allowed_domains=["muabannhadat.vn"]
+    rules = (Rule(LinkExtractor(allow=()),callback='parse_item',follow=True))
+    filter=r'http:\/\/www.muabannhadat.vn\/([\w\W]+)\/\w+'
+    regex_schemes=re.compile(filter,re.IGNORECASE)
+    
     def start_requests(self):
         #input real estate links
 
-        urls=["http://www.muabannhadat.vn"]
+        urls=["http://www.muabannhadat.vn/can-ho-ban-chung-cu-3529/ban-nhanh-can-ho-thu-duc-chi-650tr-can-co-ban-cong-6224634","http://www.muabannhadat.vn/can-ho-ban-chung-cu-3529/ban-nhanh-can-ho-thu-duc-chi-650tr-can-co-ban-cong-6224634"]
 
         # send request to each links
         for url in urls:
-            request=scrapy.Request(url=url, callback=self.parse_web)
-            #request.meta['school'] = url
-            #request.meta['previous']=url
+            request=scrapy.Request(url=url, callback=self.parse_item)
             yield request
-    def parse_web(self, response):
-        '''
-        filter_title_exclude=r'(?i)Download|map|photo|Newsletter|Calendar|summary|music|policy|Mr|Mrs|news|blog|Curriculum|summer|jobs|contact|arts|report|english|club'
-        filter_title=r'(?i)user|username|password|platform|connect|portal|admission|student|parent|parental|log in|login|sign in|signin|apply|enroll|SIS|SIMS|MIS|sign up|powerschool|ISAM|Engage|Veracross|myschoolportal|SchoolBase'
-        filter_body=r'(?i)\buser\b|\busername\b|\bpassword\b|\bplatform\b|\bportal\b|\blog in\b|\blogin\b|\bsign in\b|\bsignin\b|\bSIS\b|\bSIMS\b|\bMIS\b|\bsign up\b|\bpowerschool\b|\bISAM\b|\bEngage\b|\bVeracross\b|\bmyschoolportal\b|\bSchoolBase\b'
-        title=response.xpath('//title/text()').re(filter_title)
-        title_exclude=response.xpath('//title/text()').re(filter_title_exclude)
-        body=response.xpath('//body//text()').re(filter_body)
 
-        if (len(title_exclude)==0) and (len(title)>0 or len(body)>0):
-            l = ItemLoader(item=SchoolInfo(), response=response)
-            l.add_css('title',"title::text")
-            l.add_value('depth',response.meta['depth'])
-            l.add_value('link',response.url)
-            l.add_value('school',response.meta['school'])
-            l.add_value('previous',response.meta['previous'])
-            l.add_value('keywords',"_".join(set(body)))
-            print "load item:", l.load_item()
+    def filter_links(self, links):
+        print ('**************************************************************')
+        for link in links:
+            #if self.allowed_domains[0] not in link.url:
+            print ('**************************************************************')
+            print link.url
+
+    def parse_item(self, response):
+
+        loc=response.xpath('//span[@id="MainContent_ctlDetailBox_lblMapLink"]/a/@href').re(r'loc:(\d+\.\d+),(\d+\.\d+)')
+        cost_extract=response.xpath('//span[@id="MainContent_ctlDetailBox_lblPrice"]/text()').extract()
+        
+
+        if loc and cost_extract:
+            lon=str(loc[0])
+            lat=str(loc[1])
+
+            #cost_extract=response.xpath('//span[@id="MainContent_ctlDetailBox_lblPrice"]/text()').extract()
+            cost_value=cost_extract[0].split()[0]
+            if cost_value.isdigit():
+                cost=str(cost_value) if float(cost_value) >50 else str(float(cost_value)*1000)
+            else:
+                cost="Secret"
+
+            #extract street, award, district and city
+            street=response.xpath('//span[@id="MainContent_ctlDetailBox_lblStreet"]/text()').extract()
+            ward=response.xpath('//span[@id="MainContent_ctlDetailBox_lblWard"]/a/text()').extract()
+            district=response.xpath('//span[@id="MainContent_ctlDetailBox_lblDistrict"]/a/text()').extract()
+            city=response.xpath('//span[@id="MainContent_ctlDetailBox_lblCity"]/a/text()').extract()
+
+            square_ext=response.xpath('//span[@id="MainContent_ctlDetailBox_lblSurface"]/text()').extract()
+            square=str(square_ext[0].split()[0])
+
+            category=self.regex_schemes.search(response.url).groups(1)[0]
+
+            date_created=response.xpath('//span[@id="MainContent_ctlDetailBox_lblDateCreated"]/a/text()').extract()
+            date_modified=response.xpath('//span[@id="MainContent_ctlDetailBox_lblDateUpdated"]/a/text()').extract()
+
+            l = ItemLoader(item=RealEstateInfo(), response=response)
+            l.add_value('lon',lon)
+            l.add_value('lat',lat)
+            l.add_value('cost',cost)
+            l.add_value('square',square)
+            l.add_value('category',category)
+            if street:
+                l.add_value('street',street[0].encode('utf-8'))
+            if ward:
+                l.add_value('ward',ward[0].encode('utf-8'))
+            if district:
+                l.add_value('district',district[0].encode('utf-8'))
+            if city:
+                l.add_value('city',city[0].encode('utf-8'))
+            l.add_value('url',response.url)
+            
+            l.add_value('date_created',date_created)
+            if date_modified:
+                l.add_value('date_modified',date_modified)
+
             yield l.load_item()
 
+        
+        
+        
+        links = LinkExtractor().extract_links(response)
+        if links is not None:
+            for link in links:
+                next_page = link.url
+                
+                yield scrapy.Request(next_page, callback=self.parse_item)
 
-        if response.meta['depth'] < Max_depth:
-            links = response.css('a::attr(href)').extract() # list of links
-            if links is not None:
-                for link in links:
-                    next_page = response.urljoin(link)
-                    if (regex_schemes.search(next_page) is None) and (regex_extensions.search(next_page) is None) and (regex_pages.search(next_page) is None):
-                        yield scrapy.Request(next_page, callback=self.parse_web,meta={'school':response.meta['school'],'previous':response.url})
-        '''
