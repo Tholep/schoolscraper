@@ -31,11 +31,12 @@ class myspider(scrapy.Spider):
     def start_requests(self):
         #input real estate links
 
-        urls=["http://www.muabannhadat.vn/can-ho-ban-chung-cu-3529/ban-nhanh-can-ho-thu-duc-chi-650tr-can-co-ban-cong-6224634","http://www.muabannhadat.vn/can-ho-ban-chung-cu-3529/ban-nhanh-can-ho-thu-duc-chi-650tr-can-co-ban-cong-6224634"]
+        urls=["http://www.muabannhadat.vn/can-ho-ban-chung-cu-cao-cap-3530/xuat-canh-toi-can-ban-can-ho-viva-riverside-69m2-t-6321044"]
 
         # send request to each links
         for url in urls:
             request=scrapy.Request(url=url, callback=self.parse_item)
+            #request.meta['proxy'] = "http://127.0.0.1:9050"
             yield request
 
     def filter_links(self, links):
@@ -73,8 +74,8 @@ class myspider(scrapy.Spider):
 
             category=self.regex_schemes.search(response.url).groups(1)[0]
 
-            date_created=response.xpath('//span[@id="MainContent_ctlDetailBox_lblDateCreated"]/a/text()').extract()
-            date_modified=response.xpath('//span[@id="MainContent_ctlDetailBox_lblDateUpdated"]/a/text()').extract()
+            date_created=response.xpath('//span[@id="MainContent_ctlDetailBox_lblDateCreated"]/text()').extract()
+            date_modified=response.xpath('//span[@id="MainContent_ctlDetailBox_lblDateUpdated"]/text()').extract()
 
             l = ItemLoader(item=RealEstateInfo(), response=response)
             l.add_value('lon',lon)
@@ -92,10 +93,10 @@ class myspider(scrapy.Spider):
                 l.add_value('city',city[0].encode('utf-8'))
             l.add_value('url',response.url)
             
-            l.add_value('date_created',date_created)
+            l.add_value('date_created',date_created[0])
             if date_modified:
-                l.add_value('date_modified',date_modified)
-
+                l.add_value('date_modified',date_modified[0])
+            print l
             yield l.load_item()
 
         

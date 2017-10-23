@@ -6,8 +6,23 @@
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-
-
+from scrapy.conf import settings
+import random
+from scrapy import log
+class ProxyMiddleware(object):
+    def process_request(self, request, spider):
+        request.meta['proxy'] = "http://127.0.0.1:8118"
+class RandomUserAgentMiddleware(object):
+    def process_request(self, request, spider):
+        ua  = random.choice(settings.get('USER_AGENT_LIST'))
+        print ua
+        if ua:
+            request.headers.setdefault('User-Agent', ua)
+            #this is just to check which user agent is being used for request
+            spider.log(
+                u'User-Agent*****: {} {}'.format(request.headers.get('User-Agent'), request),
+                level=log.DEBUG
+            )
 class RealestateSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
