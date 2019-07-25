@@ -1,21 +1,15 @@
 import sys
-# Add the ptdraft folder path to the sys.path list
-sys.path.append('/home/thole/Downloads/tutorial/')
-
 import scrapy
-
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
-
 from scrapy.loader import ItemLoader
-from tutorial.items import SchoolInfo
-
-import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-
 import re
+from items import SchoolInfo
 import pandas as pd
+# Add the ptdraft folder path to the sys.path list
+sys.path.append('/home/thole/Downloads/tutorial/')
 
 Max_depth=2
 filters_scheme=r'^(javascript|mailto|tel)'
