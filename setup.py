@@ -9,7 +9,7 @@ with open(os.path.join(here, 'CHANGES.md')) as f:
     CHANGES = f.read()
 
 requires = [
-    'pip==19.0.3', # update pip
+    'pip==21.1', # update pip
     'pandas==0.23.4', # Read the Excel file and preprocess as a dataframe
     'numpy==1.15.4', # Dependency of pandas library, used also for preprocessing data efficiently
     'items==0.6.5',
