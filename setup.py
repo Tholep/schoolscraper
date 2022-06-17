@@ -13,7 +13,7 @@ requires = [
     'pandas==0.23.4', # Read the Excel file and preprocess as a dataframe
     'numpy==1.15.4', # Dependency of pandas library, used also for preprocessing data efficiently
     'items==0.6.5',
-    'scrapy==1.5.2'
+    'scrapy==2.6.1'
 ]
 
 # entrypoints = {
